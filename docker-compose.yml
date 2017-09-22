@@ -1,0 +1,17 @@
+version: '3'
+services:
+  db:
+    build: ./docker-postgres-7.4
+    volumes:
+      - data:/var/lib/postgresql
+    ports:
+    - "5432"
+  web:
+    build: .
+    command: ./script/server -b 0.0.0.0
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+volumes:
+  data:
