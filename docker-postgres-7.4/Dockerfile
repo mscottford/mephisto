@@ -1,73 +1,16 @@
-# based on Dockerfile for official postgresql 9.2
-
 FROM pblaszczyk/debian-etch
 
 # prevent apt-get errors about `dialog` and `readline` not being available
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN set -ex; \
-	if ! command -v gpg > /dev/null; then \
-		apt-get update; \
-		apt-get install -y --no-install-recommends \
-			gnupg2 \
-			dirmngr \
-		; \
-		rm -rf /var/lib/apt/lists/*; \
-	fi
+RUN apt-get update && apt-get -y install postgresql-7.4 postgresql-client-7.4 postgresql-contrib-7.4
 
-# explicitly set user/group IDs
-RUN addgroup --system --gid=999 postgres && useradd -r -g postgres --uid=999 postgres
+USER postgres
 
-# get more recent CA-Certificate list than is available from etch packages
-# needed to be able to get https connection to github.com
-RUN set -x \
-	&& apt-get update \
-	&& apt-get install -y openssl \
-	&& wget http://anduin.linuxfromscratch.org/BLFS/other/make-ca.sh-20170514 \
-	&& wget http://anduin.linuxfromscratch.org/BLFS/other/certdata.txt \
-	&& install -vm755 make-ca.sh-20170514 /usr/sbin/make-ca.sh \
-	&& /usr/sbin/make-ca.sh
-
-# grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.10
-RUN set -x \
-	&& wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
-	&& chmod +x /usr/local/bin/gosu \
-	&& gosu nobody true
-
-# make the "en_US.UTF-8" locale so postgres will be utf-8 enabled by default
-RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
-	&& localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-ENV LANG en_US.utf8
-
-RUN mkdir /docker-entrypoint-initdb.d
-
-ENV PG_MAJOR 7.4
-# ENV PG_VERSION 9.2.23-1.pgdg80+1
-
-RUN mkdir /var/lib/apt/lists/partial
-
-RUN apt-get update \
-	&& apt-get install -y \
-		postgresql-common \
-		"postgresql-$PG_MAJOR" \
-		"postgresql-contrib-$PG_MAJOR"
-
-# make the sample config easier to munge (and "correct by default")
-RUN mv -v "/usr/share/postgresql/$PG_MAJOR/postgresql.conf.sample" /usr/share/postgresql/ \
-	&& ln -sv ../postgresql.conf.sample "/usr/share/postgresql/$PG_MAJOR/" \
-	&& sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/share/postgresql/postgresql.conf.sample
-
-RUN mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgresql && chmod 2777 /var/run/postgresql
-
-ENV PATH /usr/lib/postgresql/$PG_MAJOR/bin:$PATH
-ENV PGDATA /var/lib/postgresql/data
-RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA" # this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
-VOLUME /var/lib/postgresql/data
-
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN ln -s usr/local/bin/docker-entrypoint.sh / # backwards compat
-ENTRYPOINT ["docker-entrypoint.sh"]
+RUN /etc/init.d/postgresql-7.4 start && psql template1 --command "ALTER USER postgres WITH CREATEDB CREATEUSER PASSWORD 'postgres';" && createdb -O postgres postgres
 
 EXPOSE 5432
-CMD ["postgres"]
+
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/7.4/main/pg_hba.conf
+
+CMD ["/usr/lib/postgresql/7.4/bin/postmaster", "-D", "/var/lib/postgresql/7.4/main", "-i"]
