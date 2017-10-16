@@ -1,0 +1,16 @@
+development: &defaults
+  adapter: postgresql
+  database: mephisto_development
+  username: postgres
+  password: postgres
+  host: db
+  port: 5432
+  encoding: UTF8
+
+test:
+  <<: *defaults
+  database: mephisto_test
+
+production:
+  <<: *defaults
+  database: mephisto_production

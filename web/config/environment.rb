@@ -1,6 +1,6 @@
 # Be sure to restart your web server when you modify this file.
 
-# Uncomment below to force Rails into production mode when 
+# Uncomment below to force Rails into production mode when
 # you don't control web/app server and can't set it the proper way
 # ENV['RAILS_ENV'] ||= 'production'
 
@@ -36,7 +36,7 @@ end
 
 Rails::Initializer.run do |config|
   # Settings in config/environments/* take precedence those specified here
-  
+
   # Skip frameworks you're not going to use
   config.frameworks -= [ :active_resource ]
 
@@ -46,17 +46,17 @@ Rails::Initializer.run do |config|
   # upstream gem was last released in 2004, and needs to be repackaged
   # before we can treat it like a normal gem.
   config.load_paths += %W( #{RAILS_ROOT}/vendor/rubypants-0.2.0/lib )
-  
+
   # NFI why this is here.  find and eradicate the bug.
   config.load_paths += %W( #{RAILS_ROOT}/vendor/rails/actionwebservice/lib )
 
-  # Force all environments to use the same logger level 
+  # Force all environments to use the same logger level
   # (by default production uses :info, the others :debug)
   # config.log_level = :debug
 
   # Make Active Record use UTC-base instead of local time
   config.active_record.default_timezone = :utc
-  
+
   # Use Active Record's schema dumper instead of SQL when creating the test database
   # (enables use of different database adapters for development and test environments)
   config.active_record.schema_format = :ruby
@@ -88,5 +88,5 @@ Rails::Initializer.run do |config|
              :source => 'http://gems.github.com'
 end
 
-# Don't update this file, make custom tweaks in config/initializers/custom.rb, 
+# Don't update this file, make custom tweaks in config/initializers/custom.rb,
 # or create your own file in config/initializers
