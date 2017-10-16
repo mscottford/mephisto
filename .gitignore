@@ -12,3 +12,4 @@ public/plugin_assets
 tmp
 themes
 *~
+*/node_modules
