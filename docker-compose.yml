@@ -8,6 +8,8 @@ services:
       - "5432"
   web:
     build: .
+    volumes:
+      - .:/app
     command: ./script/server -b 0.0.0.0
     ports:
       - "3000:3000"

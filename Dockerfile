@@ -14,7 +14,10 @@ RUN apt-get update && apt-get install -y \
   zlibc \
   zlib1g \
   zlib1g-dev \
-  libssl-dev
+  libssl-dev \
+  libxml-dev \
+  libxml2-dev \
+  libxslt-dev
 
 ENV RUBY_MAJOR 1.8
 ENV RUBY_VERSION 1.8.7-p374
@@ -34,8 +37,8 @@ RUN curl -SLO "http://ftp.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.
   && echo 'gem: --no-document' > /usr/local/etc/gemrc
 
 
-ENV RUBYGEMS_MAJOR 1.8
-ENV RUBYGEMS_VERSION 1.8.29
+ENV RUBYGEMS_MAJOR 1.4
+ENV RUBYGEMS_VERSION 1.4.2
 
 # Install rubygems and bundler
 RUN curl -SLO "http://production.cf.rubygems.org/rubygems/rubygems-$RUBYGEMS_VERSION.tgz" \
@@ -55,6 +58,9 @@ RUN gem install rails -v '2.2.2'
 RUN gem install rdoc -v '3.9.5'
 
 ADD . ./
+RUN rake gems:install
+
+
 
 EXPOSE 3000
 
